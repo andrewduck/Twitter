@@ -10,26 +10,51 @@ import UIKit
 
 class NewTweetViewController: UIViewController {
 
+    var replyTweet: Tweet?
+    var replyId: Int?
+    
+    @IBOutlet weak var nameLabel: UILabel!
+    @IBOutlet weak var screenNameLabel: UILabel!
+    @IBOutlet weak var userImageView: UIImageView!
+    @IBOutlet weak var tweetText: UITextView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
-    }
+        let user = User.currentUser
+        
+        nameLabel.text = user?.name as? String
+        screenNameLabel.text = "@\(user?.screenname as! String)"
+        if ((user?.profileUrl = user?.profileUrl) != nil) {
+            userImageView.setImageWithURL((user?.profileUrl)!)
+        }
+        
+        tweetText.becomeFirstResponder()
+        if replyTweet != nil {
+            tweetText.text = "@\(replyTweet!.user.screenname as! String) "
+            replyId = replyTweet?.id
+        } else {
+            tweetText.text = ""
+        }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+        tweetText.editable = true
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    @IBAction func onTweetButton(sender: AnyObject) {
+        if replyId != nil {
+            TwitterClient.sharedInstance.createTweet(tweetText.text, replyId: replyId!)
+        } else {
+            TwitterClient.sharedInstance.createTweet(tweetText.text, replyId: nil)
+        }
+        
+        dismissViewControllerAnimated(true, completion: nil)
+        
+        // don't dismiss if the tweet fails
+        // add tweet to tweet list, or force refresh on network
     }
-    */
+    
+    @IBAction func onCancelButton(sender: AnyObject) {
+        dismissViewControllerAnimated(true, completion: nil)
+    }
 
 }
